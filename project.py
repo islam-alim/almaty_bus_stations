@@ -1,70 +1,22 @@
-import json
-import matplotlib.pyplot as plt
-import pandas as pd
+import osmnx as ox
 import networkx as nx
+import matplotlib.pyplot as plt
 
-df = pd.read_csv("interpreter.csv", sep="\t")
+place_name = "Almaty, Kazakhstan"
 
-G = nx.Graph()
+# get the road map
+G = ox.graph_from_place(place_name, network_type="drive")
 
-for _, row in df.iterrows():
+#G = ox.project_graph(G)
 
-    if pd.isna(row["@lat"]) or pd.isna(row["@lon"]):
-        continue
-
-    G.add_node(
-        row["@id"],
-        pos=(row["@lon"], row["@lat"]),
-        name=row["name"]
-    )
-
-pos = nx.get_node_attributes(G, "pos")
+# get the bus_stop edges
+stops = ox.features_from_place(place_name, tags={"highway": "bus_stop"})
 
 
-with open("export.json", "r", encoding="utf-8") as f:
-    data = json.load(f)
+# plot the graph
+fig, ax = ox.plot_graph(G, show=False, close=False)
 
-
-
-osm_nodes = {}
-
-for el in data["elements"]:
-    if el["type"] == "node":
-        osm_nodes[el["id"]] = (el["lon"], el["lat"])
-
-
-plt.figure(figsize=(12, 12))
-
-
-
-for el in data["elements"]:
-
-    if el["type"] == "way":
-
-        coords = []
-
-        for nid in el["nodes"]:
-            if nid in osm_nodes:
-                coords.append(osm_nodes[nid])
-
-        if len(coords) > 1:
-            x = [c[0] for c in coords]
-            y = [c[1] for c in coords]
-
-            plt.plot(
-                x,
-                y,
-                color="gray",
-                linewidth=1
-            )
-
-
-nx.draw(
-    G,
-    pos=pos,
-    node_size=10,
-    node_color="blue",
-    with_labels=False
-)
+#plot the bus stops
+stops.plot(ax=ax, color="red", markersize=10)
 
 plt.show()
