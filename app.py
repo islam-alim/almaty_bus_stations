@@ -7,12 +7,7 @@ app = Flask(__name__)
 place_name = "Almaty, Kazakhstan"
 
 print("Loading graph...")
-G = ox.graph_from_place(
-    place_name,
-    network_type="drive",
-    simplify=True
-)
-G = ox.project_graph(G)
+G = ox.graph_from_place(place_name, network_type="drive")
 G = ox.add_edge_speeds(G)
 G = ox.add_edge_travel_times(G)
 
@@ -39,7 +34,6 @@ def index():
 @app.route("/stops")
 def get_stops():
     data = []
-
     for idx, (_, row) in enumerate(stops.iterrows()):
         data.append({
             "id": idx,
@@ -47,7 +41,6 @@ def get_stops():
             "lon": row.geometry.x,
             "name": str(row.get("name", "Bus stop"))
         })
-
     return jsonify(data)
 
 

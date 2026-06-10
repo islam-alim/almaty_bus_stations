@@ -41,7 +41,7 @@ for idx, row in stops.iterrows():
 stops["graph_node"] = nearest_nodes
 
 start_stop = 109
-end_stop = 9
+end_stop = 337
 
 # function returning the rote and time needed for this
 def route_and_time(start, end):
