@@ -8,6 +8,22 @@ let start = null;
 let end = null;
 let routeLine = null;
 
+
+// load bus routes
+fetch("/routes/all")
+    .then(r => r.json())
+    .then(routes => {
+        routes.forEach(route => {
+            route.directions.forEach(dir => {
+                L.polyline(dir.line, {
+                    color: "green",
+                    weight: 2,
+                    opacity: 0.5
+                    }).addTo(map);
+            });
+        });
+    });
+
 // load stops
 fetch("/stops")
     .then(res => res.json())

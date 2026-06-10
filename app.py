@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, jsonify
 import osmnx as ox
 import networkx as nx
+import json
+import os
 
 app = Flask(__name__)
 
@@ -25,6 +27,41 @@ for _, row in stops.iterrows():
 
 stops["graph_node"] = stop_nodes
 
+# adding bus routes
+
+ROUTE_DIR = "routes"
+
+@app.route("/routes/all")
+def all_routes():
+
+    routes = []
+
+    for file in os.listdir(ROUTE_DIR):
+
+        # skip non-json files
+        if not file.endswith(".json"):
+            continue
+
+        path = os.path.join(ROUTE_DIR, file)
+
+        # skip empty files
+        if os.path.getsize(path) == 0:
+            print("Skipping empty file:", file)
+            continue
+
+        try:
+            with open(path, encoding="utf-8") as f:
+                data = json.load(f)
+
+            routes.append({
+                "routeId": file.replace(".json", ""),
+                "directions": data
+            })
+
+        except json.JSONDecodeError:
+            print("Skipping broken JSON:", file)
+
+    return jsonify(routes)
 
 @app.route("/")
 def index():
