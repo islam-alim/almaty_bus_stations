@@ -9,20 +9,39 @@ let end = null;
 let routeLine = null;
 
 
-// load bus routes
-fetch("/routes/all")
-    .then(r => r.json())
-    .then(routes => {
-        routes.forEach(route => {
-            route.directions.forEach(dir => {
-                L.polyline(dir.line, {
-                    color: "green",
-                    weight: 2,
-                    opacity: 0.5
-                    }).addTo(map);
-            });
-        });
-    });
+//// load bus routes
+//function getColor(id) {
+//    // deterministic color from string
+//    let hash = 0;
+//    for (let i = 0; i < id.length; i++) {
+//        hash = id.charCodeAt(i) + ((hash << 5) - hash);
+//    }
+//
+//    const h = hash % 360;
+//    return `hsl(${h}, 70%, 50%)`;
+//}
+//
+//fetch("/routes/all")
+//.then(r => r.json())
+//.then(routes => {
+//
+//    routes.forEach(route => {
+//
+//        const color = getColor(route.routeId);
+//
+//        route.directions.forEach(direction => {
+//
+//            L.polyline(direction.line, {
+//                color: color,
+//                weight: 3,
+//                opacity: 0.8
+//            }).addTo(map);
+//
+//        });
+//
+//    });
+//
+//});
 
 // load stops
 fetch("/stops")
@@ -38,7 +57,7 @@ fetch("/stops")
 
             marker.on("click", () => {
 
-                if (!start) {
+                if (start === null) {
                     start = stop.id;
                     console.log("Start:", start);
                 }
@@ -71,5 +90,15 @@ function getRoute() {
         routeLine = L.polyline(latlngs, {color: "blue"}).addTo(map);
 
         map.fitBounds(routeLine.getBounds());
+        console.log("Direct buses:");
+
+        data.buses.forEach(bus => {
+            console.log(bus);
+        });
+
+     //   console.log("Possible busses:");
+      //  data.buses.forEach(bus => {
+       //     console.log(bus);
+       // });
     });
 }
