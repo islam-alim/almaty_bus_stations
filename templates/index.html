@@ -7,13 +7,203 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
     <style>
-        #map { height: 100vh; }
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        #map {
+            height: 100vh;
+        }
+
+        .route-panel {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            z-index: 1000;
+            width: min(420px, calc(100vw - 32px));
+            padding: 0;
+            color: #3f3f3f;
+            pointer-events: auto;
+        }
+
+        .route-panel label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .route-panel input {
+            width: 100%;
+            height: 39px;
+            margin-bottom: 14px;
+            border: 1px solid #cfcfcf;
+            border-radius: 6px;
+            padding: 8px 10px;
+            background: rgba(255, 255, 255, 0.96);
+            color: #333;
+            font-size: 16px;
+            font-style: italic;
+            outline: none;
+        }
+
+        .route-panel input:focus {
+            border-color: #6aa1d8;
+            box-shadow: 0 0 0 2px rgba(106, 161, 216, 0.2);
+        }
+
+        .route-panel p {
+            margin: -2px 0 0;
+            color: #666;
+            font-size: 16px;
+            font-style: italic;
+            line-height: 1.35;
+        }
+
+        .route-panel .status {
+            min-height: 20px;
+            margin-top: 8px;
+            color: #a23b3b;
+            font-size: 14px;
+            font-style: normal;
+        }
+
+        .route-panel .buses {
+            margin-top: 10px;
+            color: #333;
+            font-size: 16px;
+            font-style: normal;
+            font-weight: 700;
+        }
+
+        .route-panel .buses span {
+            font-weight: 400;
+        }
+
+        .route-options {
+            display: grid;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .route-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(0, 0, 0, 0.14);
+            border-radius: 6px;
+            padding: 7px 9px;
+            background: rgba(255, 255, 255, 0.92);
+            color: #333;
+            font-size: 14px;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .route-swatch {
+            flex: 0 0 14px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18);
+        }
+
+        .route-option.active {
+            border-color: #0b63ce;
+            box-shadow: 0 0 0 2px rgba(11, 99, 206, 0.18);
+        }
+
+        .transfer-marker {
+            position: relative;
+            display: grid;
+            place-items: center;
+            width: 28px;
+            height: 28px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            background: var(--route-color);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.34);
+        }
+
+        .transfer-marker .transfer-symbol {
+            position: relative;
+            display: block;
+            width: 16px;
+            height: 16px;
+        }
+
+        .bus-transfer .transfer-symbol {
+            width: 17px;
+            height: 12px;
+            border-radius: 3px 3px 2px 2px;
+            background: #fff;
+        }
+
+        .bus-transfer .transfer-symbol::before {
+            content: "";
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 4px;
+            height: 3px;
+            background: var(--route-color);
+            box-shadow: 7px 0 0 var(--route-color);
+        }
+
+        .bus-transfer .transfer-symbol::after {
+            content: "";
+            position: absolute;
+            left: 3px;
+            bottom: -3px;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 7px 0 0 #fff;
+        }
+
+        .walking-transfer .transfer-symbol {
+            width: 16px;
+            height: 16px;
+            transform: rotate(45deg);
+            background: repeating-linear-gradient(
+                90deg,
+                #fff 0,
+                #fff 3px,
+                transparent 3px,
+                transparent 6px
+            );
+        }
     </style>
 </head>
 
 <body>
 
 <div id="map"></div>
+<form class="route-panel" id="route-form" autocomplete="off">
+    <label for="start-stop">Start of the trip:</label>
+    <input id="start-stop" list="stop-options" placeholder="The name of the bus stop">
+
+    <label for="end-stop">The end of the trip:</label>
+    <input id="end-stop" list="stop-options" placeholder="The name of the bus stop">
+
+    <p>To find a route, press the right mouse button on the map or enter the name of the stop in the search bar</p>
+    <p class="buses">Buses: <span id="route-buses">-</span></p>
+    <div class="route-options" id="route-options"></div>
+    <p class="status" id="route-status" aria-live="polite"></p>
+
+    <datalist id="stop-options"></datalist>
+</form>
 
 <script src="/static/app.js"></script>
 
